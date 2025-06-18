@@ -65,7 +65,7 @@ This is a web application built with Node.js, Express, and Mongoose that allows 
 After completing the setup steps, run `npm start` (or the appropriate command) in your terminal from the project's root directory. The server should start, and you can access the application in your web browser at `http://localhost:<PORT>` (replace `<PORT>` with the port number specified in your `.env` file, default is 3000).
 
 ## Project Structure
-
+```
 .
 ├── controllers/
 ├── db/
@@ -86,3 +86,4 @@ After completing the setup steps, run `npm start` (or the appropriate command) i
 ├── .gitignore
 ├── app.js
 └── README.md
+```
