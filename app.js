@@ -6,6 +6,9 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const csrf = require('host-csrf');
 const cookieParser = require('cookie-parser');
+const movieRouter = require('./routes/movies');
+const xss = require('perfect-express-sanitizer');
+const rateLimiter = require('express-rate-limit');
 
 const url = process.env.MONGO_URI;
 
@@ -19,6 +22,17 @@ const store = new MongoDBStore({
 store.on("error", function (error) {
     console.log(error);
 });
+
+app.set('trust proxy', 1);
+app.use(rateLimiter({
+    windowMs: 15 * 60 * 1000, //15 minutes
+    max: 100, //limit each IP to 100 requests per windowMs
+})
+);
+app.use(xss.clean({
+    xss: true,
+    noSQL: true,
+}));
 
 const sessionParams = {
     secret: process.env.SESSION_SECRET,
@@ -72,6 +86,7 @@ const secretWordRouter = require("./routes/secretWord");
 const auth = require("./middleware/auth");
 
 app.use("/secretWord", auth, secretWordRouter);
+app.use("/movies", movieRouter);
 
 
 app.use((req, res) => {

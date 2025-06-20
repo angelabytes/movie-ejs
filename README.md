@@ -66,6 +66,7 @@ After completing the setup steps, run `npm start` (or the appropriate command) i
 
 ## Project Structure
 
+```
 .
 ├── controllers/
 ├── db/
@@ -86,3 +87,4 @@ After completing the setup steps, run `npm start` (or the appropriate command) i
 ├── .gitignore
 ├── app.js
 └── README.md
+```
