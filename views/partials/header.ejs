@@ -1,8 +1,13 @@
-<h1>Trending Movies</h1>
+<h1>Movie Listing</h1>
 <% if (user) { %>
-    <p>User <%= user.name %> is logged on.</p>
+    <p>
+        <span class="ms-2"></span>
+        <%= user.name %> is logged on.
+    </p>
     <form method="POST" action="/sessions/logoff">
-        <button>Logoff</button>
+        <input type="hidden" name="_csrf" value="<%= _csrf %>">
+        <span class="ms-2"></span>
+        <button class="btn btn-sm btn-secondary">Logoff</button>
     </form>
     <% } %>
         <% if (errors) { errors.forEach((err)=> { %>
