@@ -8,6 +8,7 @@ const {
     registerDo,
     logoff,
 } = require("../controllers/sessionController");
+const csrf = require("host-csrf");
 
 router
     .route("/logon")

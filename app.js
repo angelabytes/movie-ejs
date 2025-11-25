@@ -4,6 +4,12 @@ require("dotenv").config();
 const app = express();
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
+const csrf = require('host-csrf');
+const cookieParser = require('cookie-parser');
+const movieRouter = require('./routes/movies');
+const xss = require('perfect-express-sanitizer');
+const rateLimiter = require('express-rate-limit');
+
 const url = process.env.MONGO_URI;
 
 //store for session using mongoDB
@@ -17,6 +23,17 @@ store.on("error", function (error) {
     console.log(error);
 });
 
+app.set('trust proxy', 1);
+app.use(rateLimiter({
+    windowMs: 15 * 60 * 1000, //15 minutes
+    max: 100, //limit each IP to 100 requests per windowMs
+})
+);
+app.use(xss.clean({
+    xss: true,
+    noSQL: true,
+}));
+
 const sessionParams = {
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -26,17 +43,29 @@ const sessionParams = {
 };
 
 app.set("view engine", "ejs");
-app.use(require("body-parser").urlencoded({ extended: true }));
+
+app.use(cookieParser(process.env.SESSION_SECRET));
+
+app.use(express.urlencoded({ extended: false }));
+let csrf_develeopment_mode = true;
 
 if (app.get("env") === "production") {
+    // sessionParams.cookie.secure = true; //serve secure cookies
+    csrf_develeopment_mode = false;
     app.set("trust proxy", 1);
-    sessionParams.cookie.secure = true; //serve secure cookies
 }
 
+const csrf_options = {
+    protected_operations: ["PATCH", "POST"],
+    development_mode: csrf_develeopment_mode,
+};
+
+const csrf_middleware = csrf(csrf_options); //initialize and return middleware
+
 app.use(session(sessionParams));
+app.use(csrf_middleware);
+
 app.use(require("connect-flash")());
-
-
 
 const passport = require("passport");
 const passportInit = require("./passport/passportInit");
@@ -53,11 +82,11 @@ app.get("/", (req, res) => {
 app.use("/sessions", require("./routes/sessionRoutes"));
 
 
-//replace app.get and post with router and authentication middleware
 const secretWordRouter = require("./routes/secretWord");
-
 const auth = require("./middleware/auth");
+
 app.use("/secretWord", auth, secretWordRouter);
+app.use("/movies", movieRouter);
 
 
 app.use((req, res) => {
